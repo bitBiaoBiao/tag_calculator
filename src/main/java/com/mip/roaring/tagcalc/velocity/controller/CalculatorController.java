@@ -3,6 +3,8 @@ package com.mip.roaring.tagcalc.velocity.controller;
 import com.mip.roaring.tagcalc.velocity.service.CalculatorService;
 import com.mip.roaring.tagcalc.velocity.utils.Infix2SuffixCalculator;
 import com.mip.roaring.tagcalc.velocity.vo.OperateResultVo;
+import com.mip.roaring.tagcalc.velocity.vo.RequestCreateVo;
+import com.mip.roaring.tagcalc.velocity.vo.RequestVo;
 import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,16 +30,15 @@ public class CalculatorController {
 
     @ResponseBody
     @RequestMapping(value = "/createTag", method = {RequestMethod.POST, RequestMethod.GET})
-    public OperateResultVo createTag(@RequestParam(value = "id") Long id,
-                                     @RequestParam("data") List<String> reqData) {
+    public OperateResultVo createTag(@RequestBody RequestCreateVo data) {
         OperateResultVo vo = new OperateResultVo();
         try {
-            if (reqData.isEmpty()) {
+            if (data.getData() == null || data.getData().isEmpty() || data.getId() == null) {
                 vo.setMsg("empty data,please reload");
                 vo.setSuccess(false);
                 return vo;
             }
-            return calculatorService.saveAudience(id, reqData);
+            return calculatorService.saveAudience(data.getId(), data.getData());
         } catch (Exception e) {
             e.printStackTrace();
             logger.error("inner service error");
@@ -49,23 +50,22 @@ public class CalculatorController {
 
     @ResponseBody
     @RequestMapping(value = "/calculatorTag", method = {RequestMethod.POST, RequestMethod.GET})
-    public OperateResultVo calculatorTag(@RequestParam(value = "expression") String ids,
-                                         @RequestParam(value = "id") List<Long> list) {
+    public OperateResultVo calculatorTag(@RequestBody RequestVo ids) {
         OperateResultVo vo = new OperateResultVo();
-        if (ids == null) {
+        if (ids.getId() == null || ids.getExpression() == null || ids.getExpression().isEmpty()) {
             vo.setSuccess(false);
             vo.setMsg("传入参数错误！negative error params");
             return vo;
         }
         String tagId;
         try {
-            tagId = Infix2SuffixCalculator.regexNumber(ids);
+            tagId = Infix2SuffixCalculator.regexNumber(ids.getExpression());
             if (tagId == null || tagId.isEmpty()) {
                 vo.setSuccess(false);
                 vo.setMsg("传入参数错误！negative error params");
                 return vo;
             }
-            return calculatorService.handleRoaringId(tagId,list);
+            return calculatorService.handleRoaringId(tagId, ids.getId());
         } catch (Exception e) {
             e.printStackTrace();
             logger.error("calculator tags error");

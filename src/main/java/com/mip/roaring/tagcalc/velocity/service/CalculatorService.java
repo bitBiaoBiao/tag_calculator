@@ -37,7 +37,7 @@ public class CalculatorService {
     @Resource
     private RoaringBitmapReadWrite rbReadWrite;
 
-    @Value("tag.file.path")
+    @Value("${tag.file.path}")
     private String basePath;
 
     private static final String PREFIX = "key_";
@@ -150,8 +150,9 @@ public class CalculatorService {
     private void createRoaringBitmap(Long id, List<String> profiles) {
         RoaringBitmap r = new RoaringBitmap();
         if (!profiles.isEmpty()) {
-            List<String> listKey = profiles.parallelStream().map(k -> {
+            List<String> listKey = profiles.stream().map(k -> {
                 /**
+                 * r.add() 操作不支持并发
                  * hash出的int值可能为负数，但是roaringBitmap只存正数，范围 0 - （2^32-1）
                  * 存储key文件时，字符串形式存储，正则为中间:分隔，内容为 (正)负数: id     例如：554362715:18279618077
                  * 待 bitmap 逻辑计算后，最终将其 toArray 后再进行匹配
