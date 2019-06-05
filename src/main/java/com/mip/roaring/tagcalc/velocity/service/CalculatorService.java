@@ -98,7 +98,7 @@ public class CalculatorService {
      * @param exp
      */
     private RoaringBitmap calculatorSuffix(String exp) throws Exception {
-        String[] chars = exp.split("");
+        String[] chars = exp.split(",");
         Stack<RoaringBitmap> stack = new Stack<>();
         for (String c : chars) {
             switch (c) {
